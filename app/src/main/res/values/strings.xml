@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">V-Hunter</string>
+    <string name="google_geo_api_key">AIzaSyBDVM_O00YjEKX0Ny6TCMnoKoiE6yDw5zI</string>
+
+    <!-- Facebook application ID and custom URL scheme (app ID prefixed by 'fb'). -->
+    <string name="facebook_application_id" translatable="false">216403372986960</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb216403372986960</string>
+
+</resources>
