@@ -46,8 +46,12 @@ import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import org.greenrobot.greendao.query.Query;
 
@@ -119,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // get the note DAO
         DaoSession daoSession = ((Application) getApplication()).getDaoSession();
         noteDao = daoSession.getNoteDao();
+
+        getDailyStats();
     }
 
     @Override
@@ -237,6 +243,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     }
                 });
+
+        //Add device token to db
+        registerDeviceId();
     }
 
     private void linkRealToAnonymous(){
@@ -280,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void addUserMacToDb(String deviceMac) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        db.collection("users").document(user.getUid()).update("device_id", deviceMac).addOnFailureListener(new OnFailureListener() {
+        db.collection("users").document(user.getUid()).update("user_mac", deviceMac).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(MainActivity.this, "Err: "+e, Toast.LENGTH_SHORT).show();
@@ -412,5 +421,52 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //deprecated in API 26
             v.vibrate(500);
         }
+    }
+
+    private void registerDeviceId() {
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("Error", "getInstanceId failed", task.getException());
+                            return;
+                        }
+
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        db.collection("users").document(user.getUid()).update("device_token", token);
+
+
+                    }
+        });
+    }
+
+    private void getDailyStats() {
+        DocumentReference docRef = db.collection("stats").document("current_stats");
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        TextView tvDead = findViewById(R.id.tv_cases_died);
+                        TextView tvRecovered = findViewById(R.id.tv_cases_recovered);
+                        TextView tvTotal = findViewById(R.id.tv_cases_total);
+
+                        tvDead.setText(document.get("dead").toString());
+                        tvRecovered.setText(document.get("recovered").toString());
+                        tvTotal.setText(document.get("total").toString());
+
+                    } else {
+                        Toast.makeText(MainActivity.this, "Err. [MAJ non disponible.]", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "failed to get" + task.getException(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

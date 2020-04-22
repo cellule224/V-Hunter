@@ -40,6 +40,7 @@
                     android:orientation="vertical"
                     android:layout_margin="8dp">
                     <TextView
+                        android:id="@+id/tv_cases_total"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="363"
@@ -69,6 +70,7 @@
                     android:orientation="vertical"
                     android:layout_margin="8dp">
                     <TextView
+                        android:id="@+id/tv_cases_recovered"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="31"
@@ -98,6 +100,7 @@
                     android:orientation="vertical"
                     android:layout_margin="8dp">
                     <TextView
+                        android:id="@+id/tv_cases_died"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
